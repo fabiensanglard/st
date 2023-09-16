@@ -54,7 +54,7 @@ uint64_t GetTimeMs() {
 
 std::unordered_set<int> trackedPids;
 
-constexpr int kSnapshotEveryMs = 10;
+constexpr int kSnapshotEveryMs = 1;
 
 void dumpTrack(const char *prefix) {
     log("%s Tracking pids = {", prefix);
@@ -474,7 +474,7 @@ long GetMaxCombinedPss() {
     return maxPss;
 }
 
-void GenerateASCII(FILE* out) {
+void GenerateASCII(FILE* out, uint64_t totalDurationMs) {
     static int64_t cwidth = 85;
     static int64_t cheight = 15;
 
@@ -510,8 +510,7 @@ void GenerateASCII(FILE* out) {
 
     uint64_t minTimestamp = events[0].timestamp;
     uint64_t maxTimestamp = events[events.size() - 1].timestamp;
-    uint64_t totalDuration = maxTimestamp - minTimestamp;
-    float bracketWidth = (float)totalDuration / (float)cwidth;
+    float bracketWidth = (float)totalDurationMs / (float)cwidth;
     uint64_t maxPss = GetMaxCombinedPss();
 
     for (const auto pss: psss) {
@@ -600,65 +599,26 @@ void GenerateASCII(FILE* out) {
 
     // Draw botton text
     fprintf(out, "   ");
-    if (totalDuration < 1000) {
+    if (totalDurationMs < 1000) {
         fprintf(out, "0ms");
-    } else if (totalDuration < 1000000){
+    } else if (totalDurationMs < 1000000){
         fprintf(out, "0s ");
-    } else if (totalDuration < 1000000 * 60) {
+    } else if (totalDurationMs < 1000000 * 60) {
         fprintf(out, "0mn");
-    } else if (totalDuration < 1000000 * 60 * 24) {
+    } else if (totalDurationMs < 1000000 * 60 * 24) {
        fprintf(out, "0hr");
      }
 
     for (int i = 0 ; i < cwidth -4; i++ ) {
         fprintf(out, " ");
     }
-    while(totalDuration > 1000) {
-        totalDuration /= 1000;
+    while(totalDurationMs > 1000) {
+        totalDurationMs /= 1000;
     }
-    fprintf(out, "%3lu\n", totalDuration);
-
-//    fclose(ascii);
-}
-void GenerateSVGs() {
-    uint64_t minTimestamp = events[0].timestamp;
-    uint64_t maxTimestamp = events[events.size() - 1].timestamp;
-    uint64_t maxPss = 0;
-    for (const auto &event: events) {
-        switch (event.type) {
-            case PSS:
-                if (event.pss.value > maxPss) maxPss = event.pss.value;
-                break;
-            default:
-                break;
-        }
-
-    }
-    maxPss /= 1000000;
-
-    const char *output = "output.svg";
-    FILE *svg = fopen(output, "wt");
-    if (svg == nullptr) {
-        perror("Unable to open svg output");
-        exit(EXIT_FAILURE);
-    }
-    fprintf(svg, "<svg viewBox=\"%d %d %zu %zu\">", -kSnapshotEveryMs, -kSnapshotEveryMs,
-            maxTimestamp - minTimestamp + 2 * kSnapshotEveryMs, maxPss);
-
-    fprintf(svg, "\n");
-    for (const auto &event: events) {
-        if (event.type != PSS) continue;
-
-//      printf("base=%zu\n", minTimestamp);
-        fprintf(svg, R"(<circle cx="%zu" cy="%zu" r="2" fill="black"/>)", event.timestamp - minTimestamp,
-                maxPss - event.pss.value / 1000000);
-        fprintf(svg, "\n");
-    }
-
-    fprintf(svg, "</svg>\n");
+    fprintf(out, "%3lu\n", totalDurationMs);
 }
 
-long timevalToMs(struct timeval &val) {
+uint64_t toMs(struct timeval &val) {
     return val.tv_sec * 1000 + val.tv_usec / 1000;
 }
 
@@ -752,37 +712,37 @@ int main(int argc, char **argv) {
         }
     }
     close(netlink_socket);
-    long endTimeMs = GetTimeMs();
 
-    // Let's RIP the cmd process and gather some stats
-    struct rusage stats{};
+    // Let's RIP the cmd process and gather some cmdStats
+    struct rusage cmdStats{};
     int status;
-    int waited = wait4(pid, &status, 0, &stats);
+    int waited = wait4(pid, &status, 0, &cmdStats);
     if (waited < 0) {
         perror("Could not wait4");
         exit(EXIT_FAILURE);
     }
+    uint64_t endTimeMs = GetTimeMs();
+    uint64_t durationMs = endTimeMs - startTimeMs;
+
+    struct rusage childStats{};
+    int usaged = getrusage(RUSAGE_CHILDREN, &childStats);
+
 
     // It's output time!
     printf("Num threads = %d\n", numThread);
     printf("Num process = %d\n", numProcesses);
     setlocale(LC_NUMERIC, "");
     printf("Max PSS: %'zu bytes\n", GetMaxCombinedPss());
-    printf("Walltime: %'zums - user-space: %'zums - kernel-space: %'zums\n", endTimeMs - startTimeMs,
-           timevalToMs(stats.ru_utime), timevalToMs(stats.ru_stime));
+    printf("Walltime: %'zums - user-space: %'zums - kernel-space: %'zums\n", durationMs,
+           toMs(cmdStats.ru_utime),// + toMs(childStats.ru_utime),
+           toMs(cmdStats.ru_stime),// + toMs(childStats.ru_stime))
+           ;
 
     DropRoot();
 
     if (!events.empty()) {
-        // FILE *ascii = fopen("ascii.txt", "wt");
-        // if (!ascii) {
-        //   DO SOMETING
-        // }
-        GenerateASCII(stdout);
-        // close(ascii);
+        GenerateASCII(stdout, durationMs);
     }
-
-//    GenerateSVGs();
 
     return EXIT_SUCCESS;
 }
