@@ -624,7 +624,7 @@ uint64_t toMs(struct timeval &val) {
 
 int main(int argc, char **argv) {
     if (getuid() != 0) {
-        log("Only root can startTimeMs/stop the fork connector\n");
+        fprintf(stderr,"Only root can startTimeMs/stop the fork connector\n");
         return 0;
     }
 
@@ -633,7 +633,7 @@ int main(int argc, char **argv) {
     }
 
     if (argc < 2) {
-        log("No command to trace\n");
+        fprintf(stderr, "No command to trace\n");
         return 0;
     }
 
