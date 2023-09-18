@@ -33,10 +33,10 @@
 
 int numThread = 0;
 int numProcesses = 0;
-bool logEnable = false;
+bool kLogEnable = false;
 
 void log(const char *fmt, ...) {
-    if (!logEnable) {
+    if (!kLogEnable) {
         return;
     }
     va_list args;
@@ -724,8 +724,8 @@ int main(int argc, char **argv) {
     uint64_t endTimeMs = GetTimeMs();
     uint64_t durationMs = endTimeMs - startTimeMs;
 
-    struct rusage childStats{};
-    int usaged = getrusage(RUSAGE_CHILDREN, &childStats);
+//    struct rusage childStats{};
+//    int usaged = getrusage(RUSAGE_CHILDREN, &childStats);
 
 
     // It's output time!
@@ -733,10 +733,11 @@ int main(int argc, char **argv) {
     printf("Num process = %d\n", numProcesses);
     setlocale(LC_NUMERIC, "");
     printf("Max PSS: %'zu bytes\n", GetMaxCombinedPss());
-    printf("Walltime: %'zums - user-space: %'zums - kernel-space: %'zums\n", durationMs,
+    printf("Walltime: %'zums - user-space: %'zums - kernel-space: %'zums\n",
+           durationMs,
            toMs(cmdStats.ru_utime),// + toMs(childStats.ru_utime),
-           toMs(cmdStats.ru_stime),// + toMs(childStats.ru_stime))
-           ;
+           toMs(cmdStats.ru_stime)// + toMs(childStats.ru_stime))
+    );
 
     DropRoot();
 
