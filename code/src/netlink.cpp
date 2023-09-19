@@ -198,26 +198,26 @@ void ReadFromNetlink(int netlink_socket) {
 
 static void SendMCastListen(int netlink_socket) {
     char buff[BUFF_SIZE];
-    struct nlmsghdr* nl_hdr = (struct nlmsghdr *)buff;
-    struct cn_msg* cn_hdr = (struct cn_msg *)NLMSG_DATA(nl_hdr);
+    struct nlmsghdr* message = (struct nlmsghdr *)buff;
+    struct cn_msg* payload = (struct cn_msg *)NLMSG_DATA(message);
 
     memset(buff, 0, sizeof(buff));
 
-    enum proc_cn_mcast_op* mcop_msg = (enum proc_cn_mcast_op*)&cn_hdr->data[0];
-    *mcop_msg = PROC_CN_MCAST_LISTEN;
+    enum proc_cn_mcast_op* op = (enum proc_cn_mcast_op*)&payload->data[0];
+    *op = PROC_CN_MCAST_LISTEN;
 
-    nl_hdr->nlmsg_len = SEND_MESSAGE_LEN;
-    nl_hdr->nlmsg_type = NLMSG_DONE;
-    nl_hdr->nlmsg_flags = 0;
-    nl_hdr->nlmsg_seq = 0;
-    nl_hdr->nlmsg_pid = getpid();
-    /* fill the connector header */
-    cn_hdr->id.idx = CN_IDX_PROC;
-    cn_hdr->id.val = CN_VAL_PROC;
-    cn_hdr->seq = 0;
-    cn_hdr->ack = 0;
-    cn_hdr->len = sizeof(enum proc_cn_mcast_op);
-    if (send(netlink_socket, nl_hdr, nl_hdr->nlmsg_len, 0) != nl_hdr->nlmsg_len) {
+    message->nlmsg_len = SEND_MESSAGE_LEN;
+    message->nlmsg_type = NLMSG_DONE;
+    message->nlmsg_flags = 0;
+    message->nlmsg_seq = 0;
+    message->nlmsg_pid = getpid();
+
+    payload->id.idx = CN_IDX_PROC;
+    payload->id.val = CN_VAL_PROC;
+    payload->seq = 0;
+    payload->ack = 0;
+    payload->len = sizeof(enum proc_cn_mcast_op);
+    if (send(netlink_socket, message, message->nlmsg_len, 0) != message->nlmsg_len) {
         perror("failed to send proc connector mcast ctl op!\n");
         exit(EXIT_FAILURE);
     }
