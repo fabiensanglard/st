@@ -23,9 +23,9 @@ struct Event {
 extern std::vector<Event> events;
 
 
-void track(int pid);
-void untrack(int pid);
-bool tracked(int pid);
+void Track(int pid);
+void Untrack(int pid);
+bool Tracked(int pid);
 
 
 long GetMaxCombinedPss();

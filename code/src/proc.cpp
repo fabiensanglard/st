@@ -14,11 +14,11 @@
 std::unordered_map<int, std::string> pidCmdlines;
 
 
-void declare(int pid, const std::string& cmdline) {
+void Declare(int pid, const std::string& cmdline) {
   pidCmdlines[pid] = cmdline;
 }
 
-std::string getCmdline(int pid) {
+std::string GetCmdline(int pid) {
     if (pidCmdlines.contains(pid)) {
         return pidCmdlines[pid];
     }
@@ -30,10 +30,10 @@ std::string getCmdline(int pid) {
 
     char cmdlinePath[1024];
     snprintf(cmdlinePath, sizeof(cmdlinePath), "/proc/%d/cmdline", pid);
-    log("Opening '%s'\n", cmdlinePath);
+    Log("Opening '%s'\n", cmdlinePath);
     int fd = open(cmdlinePath, O_RDONLY);
     if (fd <= 0) {
-        log("Unable to open '%s'\n", cmdlinePath);
+        Log("Unable to open '%s'\n", cmdlinePath);
         pidCmdlines[pid] = "";
         return "";
     }

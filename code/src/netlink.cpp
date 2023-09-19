@@ -20,7 +20,7 @@
 #define SEND_MESSAGE_SIZE    (NLMSG_SPACE(SEND_MESSAGE_LEN))
 #define RECV_MESSAGE_SIZE    (NLMSG_SPACE(RECV_MESSAGE_LEN))
 
-static int BUFF_SIZE  = std::max((int)std::max(SEND_MESSAGE_SIZE, RECV_MESSAGE_SIZE), 1024);
+static int BUFF_SIZE = std::max((int) std::max(SEND_MESSAGE_SIZE, RECV_MESSAGE_SIZE), 1024);
 
 /*     PARENT       CHILD
  *   TGID   PID   TGID   PID
@@ -28,17 +28,17 @@ static int BUFF_SIZE  = std::max((int)std::max(SEND_MESSAGE_SIZE, RECV_MESSAGE_S
  *    X             B     B       X forked into B
  *    A             A     X       A created thread X
  *
- *    On fork, if TGID tracked, track child TGID
- *    On thread, if CHILD TGID tracked, count
+ *    On fork, if TGID tracked, Track child TGID
+ *    On thread, if CHILD TGID Tracked, count
  */
-static void onFork(proc_event *ev) {
+static void OnFork(proc_event *ev) {
     if (ev->event_data.fork.child_pid !=
         ev->event_data.fork.child_tgid) {
 
         // This is a new thread
-        if (tracked(ev->event_data.fork.child_tgid)) {
+        if (Tracked(ev->event_data.fork.child_tgid)) {
             IncThreads();
-            log("%s:parent(pid,tgid)=%d,%d\tchild(pid,tgid)=%d,%d\n",
+            Log("%s:parent(pid,tgid)=%d,%d\tchild(pid,tgid)=%d,%d\n",
                 "NEW_THREAD ",
                 ev->event_data.fork.parent_pid,
                 ev->event_data.fork.parent_tgid,
@@ -47,29 +47,25 @@ static void onFork(proc_event *ev) {
         }
     } else {
         // This is a new process
-        if (tracked(ev->event_data.fork.parent_tgid) ||
-            tracked(ev->event_data.fork.child_tgid)) {
-//            log("Event New Process from tracked tgid\n");
+        if (Tracked(ev->event_data.fork.parent_tgid) ||
+            Tracked(ev->event_data.fork.child_tgid)) {
             IncThreads();
             IncProcesses();
-            log("%s:parent(pid,tgid)=%d,%d\tchild(pid,tgid)=%d,%d\n",
+            Log("%s:parent(pid,tgid)=%d,%d\tchild(pid,tgid)=%d,%d\n",
                 "NEW_PROCESS ",
                 ev->event_data.fork.parent_pid,
                 ev->event_data.fork.parent_tgid,
                 ev->event_data.fork.child_pid,
                 ev->event_data.fork.child_tgid);
-            track(ev->event_data.fork.child_tgid);
+            Track(ev->event_data.fork.child_tgid);
         }
     }
 }
 
 
-
-
-
-static void onExec(proc_event *ev) {
+static void OnExec(proc_event *ev) {
     int pid = ev->event_data.exec.process_pid;
-    std::string cmdline = getCmdline(pid);
+    std::string cmdline = GetCmdline(pid);
 //    printf("EXEC:pid=%d,tgid=%d\t[%s]\n",
 //        ev->event_data.exec.process_pid,
 //        ev->event_data.exec.process_tgid,
@@ -81,22 +77,22 @@ static void onExec(proc_event *ev) {
            cmdline.c_str());
 }
 
-static void onExit(proc_event *ev) {
-    log("EXIT:pid=%d, tgid=%d\texit code=%d\n",
+static void OnExit(proc_event *ev) {
+    Log("EXIT:pid=%d, tgid=%d\texit code=%d\n",
         ev->event_data.exit.process_pid,
         ev->event_data.exit.process_tgid,
         ev->event_data.exit.exit_code);
-    untrack(ev->event_data.exit.process_pid);
+    Untrack(ev->event_data.exit.process_pid);
 }
 
-static void onUid(proc_event *ev) {
-    log("UID:pid=%d,%d ruid=%d,euid=%d\n",
+static void OnUid(proc_event *ev) {
+    Log("UID:pid=%d,%d ruid=%d,euid=%d\n",
         ev->event_data.id.process_pid, ev->event_data.id.process_tgid,
         ev->event_data.id.r.ruid, ev->event_data.id.e.euid);
 }
 
-static void onGid(proc_event *ev) {
-    log("gid change: pid=%d tgid=%d from %d to %d\n",
+static void OnGid(proc_event *ev) {
+    Log("gid change: pid=%d tgid=%d from %d to %d\n",
         ev->event_data.id.process_pid,
         ev->event_data.id.process_tgid,
         ev->event_data.id.r.rgid,
@@ -107,22 +103,22 @@ void HandleMsg(struct cn_msg *cn_hdr) {
     struct proc_event *ev = (struct proc_event *) cn_hdr->data;
     switch (ev->what) {
         case proc_event::PROC_EVENT_NONE:
-            log("Listen request received\n");
+            Log("Listen request received\n");
             break;
         case proc_event::PROC_EVENT_FORK:
-            onFork(ev);
+            OnFork(ev);
             break;
         case proc_event::PROC_EVENT_EXEC:
-            onExec(ev);
+            OnExec(ev);
             break;
         case proc_event::PROC_EVENT_UID:
-            onUid(ev);
+            OnUid(ev);
             break;
         case proc_event::PROC_EVENT_GID:
-            onGid(ev);
+            OnGid(ev);
             break;
         case proc_event::PROC_EVENT_EXIT:
-            onExit(ev);
+            OnExit(ev);
             break;
         case proc_event::PROC_EVENT_SID:
         case proc_event::PROC_EVENT_PTRACE:
@@ -130,13 +126,13 @@ void HandleMsg(struct cn_msg *cn_hdr) {
         case proc_event::PROC_EVENT_COREDUMP:
             break;
         default:
-            log("Unhandled message %d\n", ev->what);
+            Log("Unhandled message %d\n", ev->what);
             break;
     }
 }
 
 
-void readFromNetlink(int netlink_socket) {
+void ReadFromNetlink(int netlink_socket) {
     struct sockaddr_nl from_nla{};
     char b[BUFF_SIZE];
 
@@ -153,16 +149,16 @@ void readFromNetlink(int netlink_socket) {
     ssize_t bytesReceived = recvfrom(netlink_socket, b, BUFF_SIZE, 0, (struct sockaddr *) &from_nla, &from_nla_len);
 
     if (from_nla.nl_pid != 0) {
-        log("nl_pid != 0");
+        Log("nl_pid != 0");
         return;
     }
 
     if (bytesReceived < 1) {
-        log("bytesReceived < 1");
+        Log("bytesReceived < 1");
         return;
     }
 
-    log("Received %d bytes\n", bytesReceived);
+    Log("Received %d bytes\n", bytesReceived);
     while (NLMSG_OK(netlinkMsgHeader, bytesReceived)) {
         cn_msg *cn_hdr = (cn_msg *) NLMSG_DATA(netlinkMsgHeader);
         if (netlinkMsgHeader->nlmsg_type == NLMSG_NOOP)
@@ -177,29 +173,57 @@ void readFromNetlink(int netlink_socket) {
     }
 }
 
-static void sendListenToNetlink(int netlink_socket) {
-    union {
-        struct cn_msg listen_msg = {
-                .id = {
-                        .idx = CN_IDX_PROC,
-                        .val = CN_VAL_PROC,
-                },
-                .seq = 0,
-                .ack = 0,
-                .len = sizeof(enum proc_cn_mcast_op)
-        };
-        char bytes[sizeof(struct cn_msg) + sizeof(enum proc_cn_mcast_op)];
-    } buf;
+// This does not work :(
+//static void SendMCastListen(int netlink_socket) {
+//    union {
+//        struct cn_msg listen_msg = {
+//                .id = {
+//                        .idx = CN_IDX_PROC,
+//                        .val = CN_VAL_PROC,
+//                },
+//                .seq = 0,
+//                .ack = 0,
+//                .len = sizeof(enum proc_cn_mcast_op)
+//        };
+//        char bytes[sizeof(struct cn_msg) + sizeof(enum proc_cn_mcast_op)];
+//    } buf;
+//
+//    *((enum proc_cn_mcast_op *) buf.listen_msg.data) = PROC_CN_MCAST_LISTEN;
+//
+//    if (send(netlink_socket, &buf, sizeof(buf), -2) != sizeof(buf)) {
+//        perror("failed to send proc connector mcast ctl op!\n");
+//        exit(EXIT_FAILURE);
+//    }
+//}
 
-    *((enum proc_cn_mcast_op *) buf.listen_msg.data) = PROC_CN_MCAST_LISTEN;
+static void SendMCastListen(int netlink_socket) {
+    char buff[BUFF_SIZE];
+    struct nlmsghdr* nl_hdr = (struct nlmsghdr *)buff;
+    struct cn_msg* cn_hdr = (struct cn_msg *)NLMSG_DATA(nl_hdr);
 
-    if (send(netlink_socket, &buf, sizeof(buf), -2) != sizeof(buf)) {
+    memset(buff, 0, sizeof(buff));
+
+    enum proc_cn_mcast_op* mcop_msg = (enum proc_cn_mcast_op*)&cn_hdr->data[0];
+    *mcop_msg = PROC_CN_MCAST_LISTEN;
+
+    nl_hdr->nlmsg_len = SEND_MESSAGE_LEN;
+    nl_hdr->nlmsg_type = NLMSG_DONE;
+    nl_hdr->nlmsg_flags = 0;
+    nl_hdr->nlmsg_seq = 0;
+    nl_hdr->nlmsg_pid = getpid();
+    /* fill the connector header */
+    cn_hdr->id.idx = CN_IDX_PROC;
+    cn_hdr->id.val = CN_VAL_PROC;
+    cn_hdr->seq = 0;
+    cn_hdr->ack = 0;
+    cn_hdr->len = sizeof(enum proc_cn_mcast_op);
+    if (send(netlink_socket, nl_hdr, nl_hdr->nlmsg_len, 0) != nl_hdr->nlmsg_len) {
         perror("failed to send proc connector mcast ctl op!\n");
         exit(EXIT_FAILURE);
     }
 }
 
-static void bindToNetlink(int netlink_socket) {
+static void BindToNetlink(int netlink_socket) {
     struct sockaddr_nl my_nla{};
     my_nla.nl_family = AF_NETLINK;
     my_nla.nl_groups = CN_IDX_PROC;
@@ -225,7 +249,7 @@ int InitNetlink() {
         exit(EXIT_FAILURE);
     }
 
-    bindToNetlink(netlink_socket);
-    sendListenToNetlink(netlink_socket);
+    BindToNetlink(netlink_socket);
+    SendMCastListen(netlink_socket);
     return netlink_socket;
 }

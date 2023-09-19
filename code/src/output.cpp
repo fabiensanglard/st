@@ -119,8 +119,6 @@ static void GenerateASCII(FILE* out, uint64_t totalDurationMs) {
         fprintf(out, "0MB");
     } else if (maxPss < 1000000000000) {
         fprintf(out, "0GB");
-    } else if (maxPss < 1000000000000000) {
-        fprintf(out, "0TB");
     } else {
         fprintf(out, "0XB");
     }
@@ -131,7 +129,7 @@ static void GenerateASCII(FILE* out, uint64_t totalDurationMs) {
     }
     fprintf(out, "┛\n");
 
-    // Draw botton text
+    // Draw bottom text
     fprintf(out, "   ");
     if (totalDurationMs < 1000) {
         fprintf(out, "0ms");

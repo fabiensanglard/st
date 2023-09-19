@@ -10,11 +10,11 @@
 
 static constexpr int kSnapshotEveryMs = 1;
 
-int forkAndExec(char *cmd, char **parameters, int numParameters) {
-    log("forkAndExec %s", cmd);
+int ForkAndExec(char *cmd, char **parameters, int numParameters) {
+    Log("ForkAndExec %s", cmd);
     std::string cmdline = std::string();
     for (int i = 0; i < numParameters; i++) {
-        log(" %s", parameters[i]);
+        Log(" %s", parameters[i]);
         cmdline += " ";
         cmdline += parameters[i];
     }
@@ -28,22 +28,22 @@ int forkAndExec(char *cmd, char **parameters, int numParameters) {
         char *argv[numParameters + 1];
         for (int i = 0; i < numParameters; i++) {
             argv[i] = parameters[i];
-            log("execv argv[%d]=%s\n", i, argv[i]);
+            Log("execv argv[%d]=%s\n", i, argv[i]);
         }
         argv[numParameters] = nullptr;
 
-        log("execv argv[%d]=%s\n", numParameters, "NULL");
+        Log("execv argv[%d]=%s\n", numParameters, "NULL");
         int ret = execvp(cmd, argv);
         if (ret == -1) {
-            log("Could not execv '%s'", cmd);
+            Log("Could not execv '%s'", cmd);
             perror("Unable to execv");
             exit(EXIT_FAILURE);
         }
     } else {
-        track(pid);
+        Track(pid);
         // For short-lived process, we may not be quick enough to poll /proc/PID/cmdline.
         // We cheat and pre-populate the cache here.
-        declare(pid, cmdline);
+        Declare(pid, cmdline);
     }
     return pid;
 }
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     }
 
     for (int i = 0; i < argc; i++) {
-        log("argv[%02d]:%s\n", i, argv[i]);
+        Log("argv[%02d]:%s\n", i, argv[i]);
     }
 
     if (argc < 2) {
@@ -84,14 +84,14 @@ int main(int argc, char **argv) {
     }
 
     // From here, we are receiving netlink events. We can create the process we want to observe.
-    // We add the forked process to the list of tracked processes.
+    // We add the forked process to the list of Tracked processes.
     uint64_t startTimeMs = GetTimeMs();
-    int pid = forkAndExec(argv[1], &argv[1], argc - 1);
+    int pid = ForkAndExec(argv[1], &argv[1], argc - 1);
 
     int64_t nextMemorySnapshot = GetTimeMs() - kSnapshotEveryMs;
 
     // Let's roll until all processes have run!
-    while (tracked(pid)) {
+    while (Tracked(pid)) {
         const int kMaxEvents = 1;
 
         // Calculate timeout so we snapshot PSS at regular intervals.
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
                     continue;
                 }
 
-                log("epoll error");
+                Log("epoll error");
                 exit(EXIT_FAILURE);
                 break;
             }
@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
             default: {
                 for (int j = 0; j < ready; j++) {
                     if (evlist[j].events & EPOLLIN) {
-                        readFromNetlink(evlist[j].data.fd);
+                        ReadFromNetlink(evlist[j].data.fd);
                     } else if (evlist[j].events & (EPOLLHUP | EPOLLERR)) {
                         perror("Netlink hangup?\n");
                         exit(EXIT_FAILURE);

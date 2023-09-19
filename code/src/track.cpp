@@ -13,30 +13,30 @@ int numProcesses = 0;
 
 std::unordered_set<int> trackedPids;
 
-static void dumpTrack(const char *prefix) {
-    log("%s Tracking pids = {", prefix);
+static void DumpTrack(const char *prefix) {
+    Log("%s Tracking pids = {", prefix);
     int i = 0;
     for (const int &pid: trackedPids) {
-        log("%d", pid);
+        Log("%d", pid);
         if (i != trackedPids.size() - 1) {
-            log(", ");
+            Log(", ");
         }
         i++;
     }
-    log("} %d process %d threads\n", numProcesses, numThread);
+    Log("} %d process %d threads\n", numProcesses, numThread);
 }
 
-void track(int pid) {
+void Track(int pid) {
     trackedPids.insert(pid);
-    dumpTrack("Add -> ");
+    DumpTrack("Add -> ");
 }
 
-void untrack(int pid) {
+void Untrack(int pid) {
     trackedPids.erase(pid);
-    dumpTrack("Rmv -> ");
+    DumpTrack("Rmv -> ");
 }
 
-bool tracked(int pid) {
+bool Tracked(int pid) {
     return trackedPids.contains(pid);
 }
 

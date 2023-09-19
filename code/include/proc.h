@@ -2,8 +2,7 @@
 
 #include <string>
 
-std::string getCmdline(int pid);
+std::string GetCmdline(int pid);
 uint64_t GetPSS(int pid);
-
-void declare(int pid, const std::string& cmdline);
+void Declare(int pid, const std::string& cmdline);
 

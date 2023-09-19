@@ -19,7 +19,7 @@ uint64_t GetTimeMs() {
 }
 
 static bool kLogEnable = false;
-void log(const char *fmt, ...) {
+void Log(const char *fmt, ...) {
     if (!kLogEnable) {
         return;
     }
