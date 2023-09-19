@@ -1,6 +1,6 @@
 #include "utils.h"
 
-#include <cstdint>
+#include <stdint.h>
 #include <ctime>
 #include <cstdarg>
 #include <cstdio>
