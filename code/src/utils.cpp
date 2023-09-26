@@ -1,6 +1,7 @@
 #include "utils.h"
 
 #include <stdint.h>
+#include <unistd.h>
 #include <ctime>
 #include <cstdarg>
 #include <cstdio>
