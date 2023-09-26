@@ -2,6 +2,7 @@
 #include "track.h"
 #include "utils.h"
 
+#include <locale.h>
 #include <cstdio>
 #include <unordered_map>
 #include <algorithm>
