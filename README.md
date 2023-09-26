@@ -4,14 +4,14 @@
 
 ## sudo
 
-Since `st` uses netlink process monitorint, it needs to be run with `sudo`.
+Since `st` uses netlink process monitoring, it needs to be run with `sudo`.
 
 ## Example
 
 ```
-$ sudo st gcc -o hello hello.c
+$ sudo st clang -o hello hello.c
 
-EXEC: [ clang++ /home/leaf/hello.cc]
+EXEC: [clang /home/leaf/hello.cc]
 EXEC: [/usr/lib/llvm-14/bin/clang -cc1 ...]
 EXEC: [/usr/bin/ld ...]
 Num threads = 3
