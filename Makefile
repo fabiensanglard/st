@@ -1,5 +1,5 @@
-CXXFLAGS ?= -O3
-ST_CXXFLAGS = -std=c++2a -Wall -Wextra
+CXXFLAGS ?= -O3 -Wall -Wextra
+ST_CXXFLAGS = -std=c++2a
 ST_CPPFLAGS = -I code/include
 
 prefix = /usr/local
