@@ -40,3 +40,19 @@ Walltime: 221ms - user-space: 136ms - kernel-space: 69ms
 0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
    0ms                                                                                 221
 ```
+
+
+## Installation
+
+Release build:
+
+```
+make
+make install prefix=<prefix>
+```
+
+For debug builds, specify `CXXFLAGS` and `LDFLAGS` before running make:
+
+```
+export CXXFLAGS="-Og -fsanitize=memory" LDFLAGS=-fsanitize=address
+```
