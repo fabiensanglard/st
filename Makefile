@@ -5,6 +5,9 @@ ST_CPPFLAGS = -I code/include
 prefix = /usr/local
 bindir = $(prefix)/bin
 
+st-sources = $(wildcard code/src/*.cpp)
+st-objs = $(st-sources:.cpp=.o)
+
 .PHONY: all install clean
 
 all: st
@@ -12,8 +15,6 @@ all: st
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $(ST_CXXFLAGS) $(ST_CPPFLAGS) -c $< -o $@
 
-st-sources = $(wildcard code/src/*.cpp)
-st-objs = $(st-sources:.cpp=.o)
 st: $(st-objs)
 	$(CXX) $(LDFLAGS) -o $@ $(st-objs)
 
