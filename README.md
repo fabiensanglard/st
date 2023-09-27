@@ -1,6 +1,6 @@
 # st: Space-Time explorer
 
-`st` is a tool to explore how command-line program work. It collects PSS usage over time, process/thread spawned, and wall-time.
+`st` is a tool to [explore how command-line program work](https://fabiensanglard.net/st/index.html). It collects PSS usage over time, process/thread spawned, and wall-time.
 
 ## sudo
 
