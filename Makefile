@@ -1,4 +1,4 @@
-CXXFLAGS ?= -O3 -Wall -Wextra
+CXXFLAGS ?= -O3 -Wall -Wextra -Wshadow -pedantic
 ST_CXXFLAGS = -std=c++2a
 ST_CPPFLAGS = -I code/include
 
