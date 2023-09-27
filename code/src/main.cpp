@@ -49,8 +49,8 @@ int ForkAndExec(char *cmd, char **parameters, int numParameters) {
 }
 
 int main(int argc, char **argv) {
-    if (getuid() != 0) {
-        fprintf(stderr,"Only root can startTimeMs/stop the fork connector\n");
+    if (geteuid() != 0) {
+        fprintf(stderr,"Needs root permission (found %d)\n", geteuid());
         return 0;
     }
 
