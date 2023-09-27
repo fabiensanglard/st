@@ -5,7 +5,7 @@ ST_CPPFLAGS = -I code/include
 prefix = /usr/local
 bindir = $(prefix)/bin
 
-st-sources = $(wildcard code/src/*.cpp)
+st-sources = code/src/main.cpp code/src/netlink.cpp code/src/output.cpp code/src/utils.cpp code/src/proc.cpp code/src/track.cpp
 st-objs = $(st-sources:.cpp=.o)
 
 .PHONY: all install clean
