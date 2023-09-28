@@ -70,11 +70,12 @@ static void OnExec(proc_event *ev) {
 //        ev->event_data.exec.process_pid,
 //        ev->event_data.exec.process_tgid,
 //        cmdline.c_str());
-    printf("\033[0;31m");
-    printf("EXEC");
-    printf("\033[0m");
-    printf(": [%s]\n",
-           cmdline.c_str());
+    if (Tracked(pid)) {  
+      printf("\033[0;31m"); // Draw it in red
+      printf("EXEC");
+      printf("\033[0m");
+      printf(": [%s]\n", cmdline.c_str());
+    }
 }
 
 static void OnExit(proc_event *ev) {
