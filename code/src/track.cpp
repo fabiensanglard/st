@@ -37,7 +37,7 @@ void Untrack(int pid) {
 }
 
 bool Tracked(int pid) {
-    return trackedPids.contains(pid);
+    return trackedPids.find(pid) != trackedPids.end();
 }
 
 long GetMaxCombinedPss() {
@@ -45,10 +45,7 @@ long GetMaxCombinedPss() {
     for (const auto &event: events) {
         switch (event.type) {
             case PSS:
-                if (!psss.contains(event.timestamp)) {
-                    psss[event.timestamp] = 0;
-                }
-                psss[event.timestamp] = psss[event.timestamp] +  event.pss.value;
+                psss[event.timestamp] += event.pss.value;
                 break;
             default:
                 break;
@@ -86,9 +83,9 @@ void SnapshotPss() {
     uint64_t now = GetTimeMs();
     for (int pid: trackedPids) {
         uint64_t pss = GetPSS(pid);
-        events.push_back({.timestamp = now,
-                                 .type = PSS,
-                                 .pss = {pid, pss}}
+        events.push_back({/* .timestamp = */ now,
+                          /* .type = */ PSS,
+                          /* .pss = */ {pid, pss}}
         );
     }
 }
