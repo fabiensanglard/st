@@ -2,10 +2,6 @@
 
 `ste` is a tool to [explore how command-line program work](https://fabiensanglard.net/st/index.html). It collects PSS usage over time, process/thread spawned, and wall-time.
 
-## sudo
-
-Since `ste` uses netlink process monitoring, it needs to be run with `sudo`.
-
 ## Example
 
 ```
@@ -56,3 +52,22 @@ For debug builds, specify `CXXFLAGS` and `LDFLAGS` before running make:
 ```
 export CXXFLAGS="-Og -fsanitize=address" LDFLAGS=-fsanitize=address
 ```
+
+## sudo or setuid
+
+Since `ste` uses netlink process monitoring, it needs to be run with root
+privileges. There are two ways to do so:
+
+1. Run `sudo ste ...`
+2. Install `ste` as a setuid executable:
+   ```
+   make
+   sudo make install-setuid prefix=<prefix>
+   ```
+
+The setuid executable approach is convenient when you need to trace e.g.
+Python scripts, or programs that need to access the home folder of the current,
+non-root user.
+
+Notice that root privileges are dropped before executing the command that is
+traced.
