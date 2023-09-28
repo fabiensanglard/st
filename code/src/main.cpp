@@ -5,8 +5,13 @@
 #include "netlink.h"
 
 #include <unistd.h>
+#include <cstring>
 
 #include <sys/epoll.h>
+
+#ifndef VERSION
+#error "VERSION not defined"
+#endif
 
 static constexpr int kSnapshotEveryMs = 1;
 
@@ -49,6 +54,21 @@ int ForkAndExec(char *cmd, char **parameters, int numParameters) {
 }
 
 int main(int argc, char **argv) {
+    for (int i = 1; i < argc; i++) {
+        // stop on positional arguments
+        if (argv[i][0] != '-') break;
+
+        if (std::strcmp(argv[i], "--version") == 0) {
+            puts(VERSION);
+            return 0;
+        }
+
+        if (std::strcmp(argv[i], "--help") == 0) {
+            printf("Usage: %s [--version] [--help] command [args...]\n", argv[0]);
+            return 0;
+        }
+    }
+
     if (geteuid() != 0) {
         fprintf(stderr,"Needs root permission (found %d)\n", geteuid());
         return 0;
