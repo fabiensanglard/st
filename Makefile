@@ -10,12 +10,12 @@ st-objs = $(st-sources:.cpp=.o)
 
 .PHONY: all install clean
 
-all: st
+all: ste
 
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $(ST_CXXFLAGS) $(ST_CPPFLAGS) -c $< -o $@
 
-st: $(st-objs)
+ste: $(st-objs)
 	$(CXX) $(LDFLAGS) -o $@ $(st-objs)
 
 install: all
@@ -23,4 +23,4 @@ install: all
 	cp -p st $(DESTDIR)$(bindir)
 
 clean:
-	rm -f $(st-objs) st
+	rm -f $(st-objs) ste

@@ -1,15 +1,15 @@
-# st: Space-Time explorer
+# ste: Space-Time Explorer
 
-`st` is a tool to [explore how command-line program work](https://fabiensanglard.net/st/index.html). It collects PSS usage over time, process/thread spawned, and wall-time.
+`ste` is a tool to [explore how command-line program work](https://fabiensanglard.net/st/index.html). It collects PSS usage over time, process/thread spawned, and wall-time.
 
 ## sudo
 
-Since `st` uses netlink process monitoring, it needs to be run with `sudo`.
+Since `ste` uses netlink process monitoring, it needs to be run with `sudo`.
 
 ## Example
 
 ```
-$ sudo st clang -o hello hello.c
+$ sudo ste clang -o hello hello.c
 
 EXEC: [clang /home/leaf/hello.cc]
 EXEC: [/usr/lib/llvm-14/bin/clang -cc1 ...]
