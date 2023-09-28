@@ -20,7 +20,7 @@ ste: $(st-objs)
 
 install: all
 	mkdir -p $(DESTDIR)$(bindir)
-	cp -p st $(DESTDIR)$(bindir)
+	cp -p ste $(DESTDIR)$(bindir)
 
 clean:
 	rm -f $(st-objs) ste
