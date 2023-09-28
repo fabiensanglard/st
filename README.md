@@ -54,5 +54,5 @@ make install prefix=<prefix>
 For debug builds, specify `CXXFLAGS` and `LDFLAGS` before running make:
 
 ```
-export CXXFLAGS="-Og -fsanitize=memory" LDFLAGS=-fsanitize=address
+export CXXFLAGS="-Og -fsanitize=address" LDFLAGS=-fsanitize=address
 ```
