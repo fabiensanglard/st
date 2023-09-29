@@ -15,7 +15,7 @@
 
 static constexpr int kSnapshotEveryMs = 1;
 
-int ForkAndExec(char *cmd, char **parameters, int numParameters) {
+int ForkAndExec(char *cmd, char **parameters, int numParameters, uid_t uid) {
     Log("ForkAndExec %s", cmd);
     std::string cmdline = std::string();
     for (int i = 0; i < numParameters; i++) {
@@ -27,7 +27,7 @@ int ForkAndExec(char *cmd, char **parameters, int numParameters) {
     int pid = fork();
     if (pid == 0) { // This is the new process
         // Drop superuser privileges
-        DropRoot();
+        DropRoot(uid);
 
         // We cannot reuse parameters as it, since it is not null terminated
         char *argv[numParameters + 1];
@@ -54,6 +54,8 @@ int ForkAndExec(char *cmd, char **parameters, int numParameters) {
 }
 
 int main(int argc, char **argv) {
+    uid_t uid = getuid();
+
     for (int i = 1; i < argc; i++) {
         // stop on positional arguments
         if (argv[i][0] != '-') break;
@@ -83,6 +85,11 @@ int main(int argc, char **argv) {
         return 0;
     }
 
+    if (setreuid(0, 0) != 0) {
+        fprintf(stderr, "Failed to setreuid\n");
+        exit(EXIT_FAILURE);
+    }
+
     InitOutput();
 
     int netlink_socket = InitNetlink();
@@ -106,7 +113,7 @@ int main(int argc, char **argv) {
     // From here, we are receiving netlink events. We can create the process we want to observe.
     // We add the forked process to the list of Tracked processes.
     uint64_t startTimeMs = GetTimeMs();
-    int pid = ForkAndExec(argv[1], &argv[1], argc - 1);
+    int pid = ForkAndExec(argv[1], &argv[1], argc - 1, uid);
 
     int64_t nextMemorySnapshot = GetTimeMs() - kSnapshotEveryMs;
 
@@ -149,7 +156,7 @@ int main(int argc, char **argv) {
     }
     close(netlink_socket);
 
-    DropRoot();
+    DropRoot(uid);
 
     GenerateOutputs(pid, startTimeMs);
 
