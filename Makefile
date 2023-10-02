@@ -5,7 +5,7 @@ ST_CXXFLAGS = -std=c++2a
 ST_CPPFLAGS = -I code/include -DVERSION=\"$(VERSION)\"
 
 prefix = /usr/local
-bindir = $(prefix)/bin
+DESTDIR = $(prefix)/bin
 
 st-sources = code/src/main.cpp code/src/netlink.cpp code/src/output.cpp code/src/utils.cpp code/src/proc.cpp code/src/track.cpp
 st-objs = $(st-sources:.cpp=.o)
@@ -21,8 +21,11 @@ ste: $(st-objs)
 	$(CXX) $(LDFLAGS) -o $@ $(st-objs)
 
 install: all
-	mkdir -p $(DESTDIR)$(bindir)
-	cp -p ste $(DESTDIR)$(bindir)
+	mkdir -p $(DESTDIR)
+	cp -p ste $(DESTDIR)
+
+uninstall: all
+	rm -i $(DESTDIR)/ste
 
 clean:
 	rm -f $(st-objs) ste
