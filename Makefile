@@ -1,7 +1,7 @@
 VERSION = 0.1.0-dev
 
 CXXFLAGS ?= -O3 -Wall -Wextra -Wshadow -pedantic
-ST_CXXFLAGS = -std=c++2a
+ST_CXXFLAGS = -std=c++11
 ST_CPPFLAGS = -I code/include -DVERSION=\"$(VERSION)\"
 
 prefix = /usr/local

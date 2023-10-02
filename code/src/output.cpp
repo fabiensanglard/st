@@ -23,10 +23,7 @@ static void GenerateASCII(FILE* out, uint64_t totalDurationMs) {
     for (const auto &event: events) {
         switch (event.type) {
             case PSS:
-                if (!psss.contains(event.timestamp)) {
-                    psss[event.timestamp] = 0;
-                }
-                psss[event.timestamp] = psss[event.timestamp] +  event.pss.value;
+                psss[event.timestamp] += event.pss.value;
                 break;
             default:
                 break;
@@ -41,7 +38,7 @@ static void GenerateASCII(FILE* out, uint64_t totalDurationMs) {
     };
 
     PssCal pssCalcs[cwidth];
-    std::fill_n(pssCalcs, cwidth, PssCal{0, 0});
+    std::fill_n(pssCalcs, cwidth, PssCal{});
 
     uint64_t minTimestamp = events[0].timestamp;
     uint64_t maxTimestamp = events[events.size() - 1].timestamp;

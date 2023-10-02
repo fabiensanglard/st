@@ -19,8 +19,9 @@ void Declare(int pid, const std::string& cmdline) {
 }
 
 std::string GetCmdline(int pid) {
-    if (pidCmdlines.contains(pid)) {
-        return pidCmdlines[pid];
+    auto it = pidCmdlines.find(pid);
+    if (it != pidCmdlines.end()) {
+        return it->second;
     }
 
     // Get cmdLine
