@@ -7,6 +7,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <csignal>
+#include <string>
+#include <pwd.h>
 
 uint64_t toMs(struct timeval &val) {
     return val.tv_sec * 1000 + val.tv_usec / 1000;
@@ -30,16 +32,41 @@ void Log(const char *fmt, ...) {
     va_end(args);
 }
 
+std::string GetUser(uid_t uid) {
+    struct passwd *pws;
+    pws = getpwuid(uid);
+    return pws->pw_name;
+}
+
+// This is only called after we checked that geteuid is 0.
+// Therefore, there are two options here. Either program
+// was run using `sudo` or it was run directly from root
+// superuser account.
 void DropRoot() {
-    const char *sudo_uid = secure_getenv("SUDO_UID");
-    const char *sudo_gid = secure_getenv("SUDO_GID");
-    if (sudo_uid == nullptr || sudo_gid == nullptr) {
-        // Not running with sudo, user is root and nothing we can drop here.
+
+    uid_t ruid, euid, suid;
+    getresuid(&ruid, &euid, &suid);
+    Log("ruid=%d, euid=%d, suid=%d\n", euid, euid, suid);
+
+    // Not effectively running as root, error.
+    if (geteuid() != 0) {
+        Log("Error: euid is not root (got %d(%s))", geteuid(), GetUser(geteuid()).c_str());
+        exit(EXIT_FAILURE);
+    }
+
+    // If the program was run with set-user-id bit, the getuid will be non-root
+    if (getuid() != 0) {
+        Log("Dropping set-user-id privileges to %d(%s)\n", getuid(), GetUser(getuid()).c_str());
+        seteuid(getuid());
+        setegid(getgid());
         return;
     }
 
-    // no need to "drop" the privileges we don't have in the first place!
-    if (getuid() != 0) {
+    // Detect if command was run with sudo, using env variables.
+    const char *sudo_uid = secure_getenv("SUDO_UID");
+    const char *sudo_gid = secure_getenv("SUDO_GID");
+    if (sudo_uid == nullptr || sudo_gid == nullptr) {
+        Log("Error: Cannot drop root (no sudo env variables)\n");
         return;
     }
 
@@ -67,6 +94,7 @@ void DropRoot() {
         perror("setgid");
         exit(EXIT_FAILURE);
     }
+
     if (setuid(uid) != 0) {
         perror("setgid");
         exit(EXIT_FAILURE);
@@ -77,4 +105,6 @@ void DropRoot() {
         printf("could not drop root privileges!\n");
         exit(EXIT_FAILURE);
     }
+
+    Log("Dropped sudo privileges to %d(%s)\n", getuid(), GetUser(getuid()).c_str());
 }
