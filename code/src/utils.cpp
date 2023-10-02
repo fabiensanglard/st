@@ -56,9 +56,9 @@ void DropRoot() {
 
     // If the program was run with set-user-id bit, the getuid will be non-root
     if (getuid() != 0) {
-        Log("Dropping set-user-id privileges to %d(%s)\n", getuid(), GetUser(getuid()).c_str());
         seteuid(getuid());
         setegid(getgid());
+        Log("Dropped set-user-id privileges to %d(%s)\n", getuid(), GetUser(getuid()).c_str());
         return;
     }
 
@@ -90,19 +90,19 @@ void DropRoot() {
 //        }
     }
 
-    if (setgid(gid) != 0) {
+    if (setegid(gid) != 0) {
         perror("setgid");
         exit(EXIT_FAILURE);
     }
 
-    if (setuid(uid) != 0) {
+    if (seteuid(uid) != 0) {
         perror("setgid");
         exit(EXIT_FAILURE);
     }
 
     // check if we successfully dropped the root privileges
     if (setuid(0) == 0 || seteuid(0) == 0) {
-        printf("could not drop root privileges!\n");
+        printf("Failed to drop root privileges!\n");
         exit(EXIT_FAILURE);
     }
 
