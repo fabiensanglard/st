@@ -83,6 +83,8 @@ void DropRoot() {
     const char *sudo_uid = secure_getenv("SUDO_UID");
     const char *sudo_gid = secure_getenv("SUDO_GID");
     if (sudo_uid == nullptr || sudo_gid == nullptr) {
+        // At this point we are out of option to drop root. It is not coming from set-user-id and it is not
+        // coming from sudo. User is likely root so keep it that way.
         Log("Error: Cannot drop root (no sudo env variables)\n");
         return;
     }
