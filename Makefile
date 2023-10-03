@@ -3,7 +3,7 @@
 #---------------------------------------------------------------------------------
 
 #Compiler and Linker
-CC		  := clang++
+#CXX	  := clang++
 
 #The Target Binary
 TARGET	  := ste
@@ -44,12 +44,12 @@ clean:
 
 #Link
 $(TARGET): $(OBJECTS)
-	$(CC) -o $(TARGETDIR)/$(TARGET) $(LDFLAGS) $^
+	$(CXX) -o $(TARGETDIR)/$(TARGET) $(LDFLAGS) $^
 
 #Compile
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(dir $@)
-	$(CC) -D VERSION='"$(VERSION)"' $(CXXFLAGS) $(_CFLAGS) $(_CXXFLAGS) $(INCLUDE) -c -o $@ $<
+	$(CXX) -D VERSION='"$(VERSION)"' $(CXXFLAGS) $(_CFLAGS) $(_CXXFLAGS) $(INCLUDE) -c -o $@ $<
 
 # Install with set-user-id
 install: all
