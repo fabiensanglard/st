@@ -52,15 +52,18 @@ static void SetGeuid(uid_t id) {
     }
 }
 
+static void LogIDs(const char* prefix) {
+    uid_t ruid, euid, suid;
+    getresuid(&ruid, &euid, &suid);
+    Log("%s ruid=%d, euid=%d, suid=%d\n", prefix, euid, euid, suid);
+}
+
 // This is only called after we checked that geteuid is 0.
 // Therefore, there are two options here. Either program
 // was run using `sudo` or it was run directly from root
 // superuser account.
 void DropRoot() {
-
-    uid_t ruid, euid, suid;
-    getresuid(&ruid, &euid, &suid);
-    Log("ruid=%d, euid=%d, suid=%d\n", euid, euid, suid);
+    LogIDs("Start DropRoot");
 
     // Not effectively running as root, error.
     if (geteuid() != 0) {
@@ -88,20 +91,12 @@ void DropRoot() {
     uid_t uid;
     if ((uid = getuid()) == 0) {
         uid = (uid_t) strtoll(sudo_uid, nullptr, 10);
-//        if (errno != 0) {
-//            perror("under-/over-flow in converting `SUDO_UID` to integer");
-//            exit(EXIT_FAILURE);
-//        }
     }
 
     // again, in case we were invoked using sudo
     gid_t gid;
     if ((gid = getgid()) == 0) {
         gid = (gid_t) strtoll(sudo_gid, nullptr, 10);
-//        if (errno != 0) {
-//            perror("under-/over-flow in converting `SUDO_GID` to integer");
-//            exit(EXIT_FAILURE);
-//        }
     }
 
     SetGeuid(gid);
@@ -109,10 +104,11 @@ void DropRoot() {
 
 
     // check if we successfully dropped the root privileges
-    if (setuid(0) == 0 || seteuid(0) == 0) {
+    if (geteuid() == 0 || getegid() == 0) {
         printf("Failed to drop root privileges!\n");
+        LogIDs("Failed DropRoot");
         exit(EXIT_FAILURE);
     }
 
-    Log("Dropped sudo privileges to %d(%s)\n", getuid(), GetUser(getuid()).c_str());
+    Log("Dropped sudo privileges to %d(%s)\n", geteuid(), GetUser(geteuid()).c_str());
 }
