@@ -229,11 +229,6 @@ static void BindToNetlink(int netlink_socket) {
     my_nla.nl_groups = CN_IDX_PROC;
     my_nla.nl_pid = getpid();
 
-    struct sockaddr_nl kern_nla{};
-    kern_nla.nl_family = AF_NETLINK;
-    kern_nla.nl_groups = CN_IDX_PROC;
-    kern_nla.nl_pid = 1;
-
     int err = bind(netlink_socket, (struct sockaddr *) &my_nla, sizeof(my_nla));
     if (err == -1) {
         perror("binding netlink_socket error");
