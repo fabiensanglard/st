@@ -44,7 +44,7 @@ clean:
 
 #Link
 $(TARGET): $(OBJECTS)
-	$(CC) -o $(TARGETDIR)/$(TARGET) $(CXXFLAGS) $^
+	$(CC) -o $(TARGETDIR)/$(TARGET) $(LDFLAGS) $^
 
 #Compile
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
