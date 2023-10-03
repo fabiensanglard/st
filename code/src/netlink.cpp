@@ -159,7 +159,6 @@ void ReadFromNetlink(int netlink_socket) {
         return;
     }
 
-    Log("Received %d bytes\n", bytesReceived);
     while (NLMSG_OK(netlinkMsgHeader, bytesReceived)) {
         cn_msg *cn_hdr = (cn_msg *) NLMSG_DATA(netlinkMsgHeader);
         if (netlinkMsgHeader->nlmsg_type == NLMSG_NOOP)
