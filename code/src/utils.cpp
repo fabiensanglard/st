@@ -38,6 +38,20 @@ std::string GetUser(uid_t uid) {
     return pws->pw_name;
 }
 
+static void SetEuid(uid_t id) {
+    if (seteuid(id) != 0) {
+        perror("seteuid");
+        exit(EXIT_FAILURE);
+    }
+}
+
+static void SetGeuid(uid_t id) {
+    if (setegid(id) != 0) {
+        perror("setgid");
+        exit(EXIT_FAILURE);
+    }
+}
+
 // This is only called after we checked that geteuid is 0.
 // Therefore, there are two options here. Either program
 // was run using `sudo` or it was run directly from root
@@ -56,8 +70,8 @@ void DropRoot() {
 
     // If the program was run with set-user-id bit, the getuid will be non-root
     if (getuid() != 0) {
-        seteuid(getuid());
-        setegid(getgid());
+        SetEuid(getuid());
+        SetGeuid(getgid());
         Log("Dropped set-user-id privileges to %d(%s)\n", getuid(), GetUser(getuid()).c_str());
         return;
     }
@@ -90,15 +104,9 @@ void DropRoot() {
 //        }
     }
 
-    if (setegid(gid) != 0) {
-        perror("setgid");
-        exit(EXIT_FAILURE);
-    }
+    SetGeuid(gid);
+    SetEuid(uid);
 
-    if (seteuid(uid) != 0) {
-        perror("setgid");
-        exit(EXIT_FAILURE);
-    }
 
     // check if we successfully dropped the root privileges
     if (setuid(0) == 0 || seteuid(0) == 0) {
