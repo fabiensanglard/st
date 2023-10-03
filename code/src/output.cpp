@@ -44,7 +44,6 @@ static void GenerateASCII(FILE* out, uint64_t totalDurationMs) {
     std::fill_n(pssCalcs, cwidth, PssCal{0, 0});
 
     uint64_t minTimestamp = events[0].timestamp;
-    uint64_t maxTimestamp = events[events.size() - 1].timestamp;
     float bracketWidth = (float)totalDurationMs / (float)cwidth;
     uint64_t maxPss = GetMaxCombinedPss();
 

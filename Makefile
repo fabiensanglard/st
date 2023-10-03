@@ -1,28 +1,61 @@
-VERSION = 0.1.0-dev
+#---------------------------------------------------------------------------------
+# VARIABLES
+#---------------------------------------------------------------------------------
 
-CXXFLAGS ?= -O3 -Wall -Wextra -Wshadow -pedantic
-ST_CXXFLAGS = -std=c++2a
-ST_CPPFLAGS = -I code/include -DVERSION=\"$(VERSION)\"
+#Compiler and Linker
+CC		  := clang++
 
-prefix = /usr/local
-bindir = $(prefix)/bin
+#The Target Binary
+TARGET	  := ste
 
-st-sources = code/src/main.cpp code/src/netlink.cpp code/src/output.cpp code/src/utils.cpp code/src/proc.cpp code/src/track.cpp
-st-objs = $(st-sources:.cpp=.o)
+#The Directories, Source, Includes, Objects, and Binary
+SRCDIR	  := code/src
+INCDIR	  := code/include
+BUILDDIR  := obj
+TARGETDIR := bin
+SRCEXT	  := cpp
+OBJEXT	  := o
+INSTALLDIR:= /usr/local/bin
 
-.PHONY: all install clean
+#Flags, Libraries and Includes
+_CFLAGS	  := -Wall -O3 -g
+_CXXFLAGS := -std=c++2a
+INCLUDE   := -I$(INCDIR)
+VERSION   := 0.1.0-dev
 
-all: ste
+#---------------------------------------------------------------------------------
+# BUSINESS LOGIC
+#---------------------------------------------------------------------------------
+SOURCES	 := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+OBJECTS	 := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
-.cpp.o:
-	$(CXX) $(CXXFLAGS) $(ST_CXXFLAGS) $(ST_CPPFLAGS) -c $< -o $@
+#Default task
+all: dirs $(TARGET)
 
-ste: $(st-objs)
-	$(CXX) $(LDFLAGS) -o $@ $(st-objs)
+#Make the Directories
+dirs:
+	@mkdir -p $(TARGETDIR)
+	@mkdir -p $(BUILDDIR)
 
-install: all
-	mkdir -p $(DESTDIR)$(bindir)
-	cp -p ste $(DESTDIR)$(bindir)
-
+#Full Clean, Objects and Binaries
 clean:
-	rm -f $(st-objs) ste
+	@$(RM) -rf $(BUILDDIR)
+	@$(RM) -rf $(TARGETDIR)
+
+#Link
+$(TARGET): $(OBJECTS)
+	$(CC) -o $(TARGETDIR)/$(TARGET) $(CXXFLAGS) $^
+
+#Compile
+$(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
+	@mkdir -p $(dir $@)
+	$(CC) -D VERSION='"$(VERSION)"' $(CXXFLAGS) $(_CFLAGS) $(_CXXFLAGS) $(INCLUDE) -c -o $@ $<
+
+# Install with set-user-id
+install: all
+	sudo chown root $(TARGETDIR)/$(TARGET)
+	sudo chmod +s $(TARGETDIR)/$(TARGET)
+	sudo cp $(TARGETDIR)/$(TARGET) $(INSTALLDIR)
+
+#Non-File Targets
+.PHONY: all clean dirs
